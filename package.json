@@ -1,0 +1,20 @@
+{
+  "name": "chow-rush",
+  "version": "0.1.0",
+  "description": "Chow Rush — Lagos food delivery arcade (Three.js + TypeScript + Vite)",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "type-check": "tsc --noEmit",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "three": "^0.160.0"
+  },
+  "devDependencies": {
+    "@types/three": "^0.160.0",
+    "typescript": "^5.3.3",
+    "vite": "^5.0.10"
+  }
+}
