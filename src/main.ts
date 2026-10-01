@@ -3,6 +3,12 @@ import { Engine } from './core/Engine';
 import { GameLoop } from './core/GameLoop';
 import './style.css';
 
+if (import.meta.env.DEV || new URLSearchParams(window.location.search).has('debug')) {
+  void import('vconsole').then(({ default: VConsole }) => {
+    new VConsole({ theme: 'dark' });
+  });
+}
+
 const engine = new Engine('game-canvas');
 const loop = new GameLoop();
 

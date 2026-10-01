@@ -10,6 +10,7 @@
     "forceConsistentCasingInFileNames": true,
     "isolatedModules": true,
     "noEmit": true,
+    "types": ["vite/client"],
     "useDefineForClassFields": true
   },
   "include": ["src", "vite.config.js"],
