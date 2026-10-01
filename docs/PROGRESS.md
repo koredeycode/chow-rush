@@ -17,7 +17,7 @@ Status legend: `[ ] Pending` `[~] In progress` `[x] Done, awaiting review` `[✓
 | 1F Delivery | `prompts/1F-delivery.md` | data/dishes.ts, data/restaurants.ts, gameplay/Order.ts, gameplay/Collision.ts, gameplay/DeliveryManager.ts | track-distance spawn +80/+120, inZone detect, payout | [x] Done, awaiting review | one order at a time, markers, TIP_BASE payout, build 0 errors |
 | 1G Heat | `prompts/1G-heat.md` | gameplay/HeatMeter.ts | drain linear, 0.66/0.33, tip 1/0.5/0 | [x] Done, awaiting review | pure logic, sanity t0/t12/t22 pass, build 0 errors |
 | 1H HUD | `prompts/1H-hud.md` | ui/hudConfig.ts, ui/HUD.ts | ₦/ % / rating / m:ss format, read-only | [x] Done, awaiting review | formatters verified ₦12,500/75%/4.5/2:30, build 0 errors |
-| 1I State | `prompts/1I-gamestate.md` | core/GameState.ts, core/Game.ts | MENU/PLAYING/PAUSED/RESULTS, timer/crash end, localStorage | [ ] Pending | <200 lines |
+| 1I State | `prompts/1I-gamestate.md` | core/GameState.ts, core/Game.ts | MENU/PLAYING/PAUSED/RESULTS, timer/crash end, localStorage | [x] Done, awaiting review | composition root, start resets, RESULTS+saveBest, 157 lines |
 | 1J Integrate | `prompts/1J-integration.md` | main.ts wiring | playable loop, 60 FPS desktop | [ ] Pending | main <50 lines |
 
 ## Phase 2 — Core Game
@@ -59,3 +59,4 @@ Status legend: `[ ] Pending` `[~] In progress` `[x] Done, awaiting review` `[✓
 | 2026-10-01 | 1F | Delivery done: track-distance orders, inZone checks, markers, payout, build passes |
 | 2026-10-01 | 1G | Heat done: linear drain, 0.66/0.33 tiers, tip 1/0.5/0, sanity pass, build passes |
 | 2026-10-01 | 1H | HUD done: read-only DOM, formatters verified, heat color tiers, build passes |
+| 2026-10-01 | 1I | State done: 4-state machine, Game wires all systems, timer/crash end, localStorage best |
