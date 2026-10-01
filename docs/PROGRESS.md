@@ -15,7 +15,7 @@ Status legend: `[ ] Pending` `[~] In progress` `[x] Done, awaiting review` `[✓
 | 1D City | `prompts/1D-city.md` | data/cityConfig.ts, world/Road.ts, world/Building.ts, world/CityScroller.ts | straight scroll, recycle, trackDistance | [x] Done, awaiting review | pooled segments, COUNT*LEN recycle, build 0 errors |
 | 1E Camera | `prompts/1E-camera.md` | core/Camera.ts | smooth follow, FOV 60/68 | [x] Done, awaiting review | exp damping 5.0, look-ahead 10, build 0 errors |
 | 1F Delivery | `prompts/1F-delivery.md` | data/dishes.ts, data/restaurants.ts, gameplay/Order.ts, gameplay/Collision.ts, gameplay/DeliveryManager.ts | track-distance spawn +80/+120, inZone detect, payout | [x] Done, awaiting review | one order at a time, markers, TIP_BASE payout, build 0 errors |
-| 1G Heat | `prompts/1G-heat.md` | gameplay/HeatMeter.ts | drain linear, 0.66/0.33, tip 1/0.5/0 | [ ] Pending | pure logic |
+| 1G Heat | `prompts/1G-heat.md` | gameplay/HeatMeter.ts | drain linear, 0.66/0.33, tip 1/0.5/0 | [x] Done, awaiting review | pure logic, sanity t0/t12/t22 pass, build 0 errors |
 | 1H HUD | `prompts/1H-hud.md` | ui/hudConfig.ts, ui/HUD.ts | ₦/ % / rating / m:ss format, read-only | [ ] Pending | IDs match 1A |
 | 1I State | `prompts/1I-gamestate.md` | core/GameState.ts, core/Game.ts | MENU/PLAYING/PAUSED/RESULTS, timer/crash end, localStorage | [ ] Pending | <200 lines |
 | 1J Integrate | `prompts/1J-integration.md` | main.ts wiring | playable loop, 60 FPS desktop | [ ] Pending | main <50 lines |
@@ -57,3 +57,4 @@ Status legend: `[ ] Pending` `[~] In progress` `[x] Done, awaiting review` `[✓
 | 2026-10-01 | 1D | City done: pooled straight segments, trackDistance clock, recycle COUNT*LEN, build passes |
 | 2026-10-01 | 1E | Camera done: chase rig exp damping, offset 10/5, look-ahead 10, build passes |
 | 2026-10-01 | 1F | Delivery done: track-distance orders, inZone checks, markers, payout, build passes |
+| 2026-10-01 | 1G | Heat done: linear drain, 0.66/0.33 tiers, tip 1/0.5/0, sanity pass, build passes |
