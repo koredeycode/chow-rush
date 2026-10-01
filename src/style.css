@@ -41,12 +41,32 @@ body {
 }
 
 #menu,
-#results,
+#results {
+  position: absolute;
+  pointer-events: none;
+}
+
 #touch-controls {
   position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  justify-content: space-evenly;
+  gap: 12px;
+  padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
   pointer-events: none;
 }
 
 #touch-controls button {
   pointer-events: auto;
+  min-width: 72px;
+  min-height: 56px;
+  padding: 12px 18px;
+  font-size: 16px;
+  font-weight: 700;
+  border: none;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.85);
+  touch-action: none;
 }
