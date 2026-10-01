@@ -12,7 +12,7 @@ Status legend: `[ ] Pending` `[~] In progress` `[x] Done, awaiting review` `[✓
 | 1A Scaffold | `prompts/1A-scaffold.md` | package, tsconfig, vite.config, index.html (HUD skeleton), main.ts, Engine.ts, GameLoop.ts, style.css, economy.ts | dev starts, build passes, HUD IDs present, quality tiers exist | [x] Done, awaiting review | build 0 errors, cube renders, all IDs present; review fix: shadow 2048/1024 + .gitkeep |
 | 1B Input | `prompts/1B-input.md` | types/input.ts, systems/Input.ts, systems/TouchInput.ts | keyboard+touch same interface, merged getInput | [x] Done, awaiting review | Keyboard+Touch swappable, OR-merge, blur clears, build 0 errors |
 | 1C Bike | `prompts/1C-bike.md` | data/bikeConfig.ts, player/Bike.ts, player/BikeController.ts | lane switch, accel/brake clamp | [x] Done, awaiting review | edge-trigger lanes + cooldown, clamps OK, build 0 errors |
-| 1D City | `prompts/1D-city.md` | data/cityConfig.ts, world/Road.ts, world/Building.ts, world/CityScroller.ts | straight scroll, recycle, trackDistance | [ ] Pending | no curves |
+| 1D City | `prompts/1D-city.md` | data/cityConfig.ts, world/Road.ts, world/Building.ts, world/CityScroller.ts | straight scroll, recycle, trackDistance | [x] Done, awaiting review | pooled segments, COUNT*LEN recycle, build 0 errors |
 | 1E Camera | `prompts/1E-camera.md` | core/Camera.ts | smooth follow, FOV 60/68 | [ ] Pending | lerp 5.0*dt |
 | 1F Delivery | `prompts/1F-delivery.md` | data/dishes.ts, data/restaurants.ts, gameplay/Order.ts, gameplay/Collision.ts, gameplay/DeliveryManager.ts | track-distance spawn +80/+120, inZone detect, payout | [ ] Pending | no static x/z |
 | 1G Heat | `prompts/1G-heat.md` | gameplay/HeatMeter.ts | drain linear, 0.66/0.33, tip 1/0.5/0 | [ ] Pending | pure logic |
@@ -54,3 +54,4 @@ Status legend: `[ ] Pending` `[~] In progress` `[x] Done, awaiting review` `[✓
 | 2026-10-01 | 1A | Review: Engine shadow mapSize 2048/1024 fix, public/.gitkeep added, type-check+build 0 errors |
 | 2026-10-01 | 1B | Input done: Keyboard + Touch same interface, getCombinedInput OR-merge, build passes |
 | 2026-10-01 | 1C | Bike done: greybox box, edge-trigger lanes + cooldown, accel/brake clamp, build passes |
+| 2026-10-01 | 1D | City done: pooled straight segments, trackDistance clock, recycle COUNT*LEN, build passes |
