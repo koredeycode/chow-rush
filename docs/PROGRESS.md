@@ -67,3 +67,6 @@ Status legend: `[ ] Pending` `[~] In progress` `[x] Done, awaiting review` `[✓
 | 2026-10-03 | 2 | Zones slice (uncommitted): 5 zones, fog crossfade, traffic density scales spawns, input edges moved to controller |
 | 2026-10-03 | 2 | Landmarks slice (uncommitted): per-zone gateway props at boundaries, pooled visibility |
 | 2026-10-04 | 2 | Feel+UI batch: touch Brake, lane-swipe hop fix, crash shake, results screen+restart, 5 dishes/4 restaurants |
+| 2026-10-04 | 2 | Progression+garage: wallet/totalXP/levels persisted, 3 upgrade lines live, G key + results entry |
+| 2026-10-04 | 2 | Weather: zone rain particles + night headlight cone, owned by scroller |
+| 2026-10-04 | 2 | Music: original 120 BPM WebAudio groove, M mute, gesture unlock; results shows level |

@@ -5,6 +5,7 @@ export interface ResultsData {
   xp: number;
   rating: number;
   deliveries: number;
+  level: number;
 }
 
 function getEl(id: string): HTMLElement {
@@ -46,7 +47,7 @@ export class Results {
     this.shown = true;
     this.lines.textContent =
       `${formatCurrency(d.cash)} · ${d.deliveries} deliveries · ` +
-      `⭐ ${formatRating(d.rating)} · ${d.xp} XP`;
+      `⭐ ${formatRating(d.rating)} · ${d.xp} XP · Lv ${d.level}`;
     this.el.classList.add('visible');
   }
 

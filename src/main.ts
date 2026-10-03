@@ -1,6 +1,6 @@
 import { Game } from './core/Game';
 import { GameLoop } from './core/GameLoop';
-import { GameState } from './core/GameState';
+import { GameState, levelForXp } from './core/GameState';
 import { Music } from './audio/Music';
 import { Results } from './ui/Results';
 import { getLogs } from './utils/log';
@@ -30,7 +30,7 @@ loop.onUpdate = (dt: number): void => {
   game.update(dt);
   if (game.getState() === GameState.RESULTS) {
     const s = game.stats;
-    results.show({ cash: s.cash, xp: s.xp, rating: s.rating, deliveries: s.deliveries });
+    results.show({ cash: s.cash, xp: s.xp, rating: s.rating, deliveries: s.deliveries, level: levelForXp(s.totalXp) });
   } else {
     results.hide();
   }
