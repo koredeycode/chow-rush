@@ -18,7 +18,10 @@ if (import.meta.env.DEV || new URLSearchParams(window.location.search).has('debu
 
 const game = new Game();
 const loop = new GameLoop();
-const results = new Results(() => game.start());
+const results = new Results(
+  () => game.start(),
+  () => game.toggleGarage(),
+);
 
 loop.onUpdate = (dt: number): void => {
   game.update(dt);
@@ -35,6 +38,10 @@ loop.start();
 game.start();
 
 window.addEventListener('keydown', (e: KeyboardEvent): void => {
+  if (e.code === 'KeyG') {
+    game.toggleGarage();
+    return;
+  }
   if (e.code !== 'KeyP' && e.code !== 'Escape') return;
   if (game.getState() === GameState.PLAYING) game.pause();
   else game.resume();

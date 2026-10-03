@@ -18,7 +18,7 @@ export class Results {
   private readonly lines: HTMLParagraphElement;
   private shown = false;
 
-  constructor(onRestart: () => void) {
+  constructor(onRestart: () => void, onGarage?: () => void) {
     this.el = getEl('results');
     const card = document.createElement('div');
     card.className = 'results-card';
@@ -32,6 +32,12 @@ export class Results {
       onRestart();
     });
     card.append(title, this.lines, button);
+    if (onGarage) {
+      const garageBtn = document.createElement('button');
+      garageBtn.textContent = 'Garage 🛠';
+      garageBtn.addEventListener('click', () => onGarage());
+      card.appendChild(garageBtn);
+    }
     this.el.appendChild(card);
   }
 

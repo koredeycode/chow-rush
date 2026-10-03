@@ -3,6 +3,7 @@ import { LANES } from '../data/bikeConfig';
 import { DISHES } from '../data/dishes';
 import { TIP_BASE } from '../data/economy';
 import { RESTAURANTS } from '../data/restaurants';
+import { logEvent } from '../utils/log';
 import { inZone } from './Collision';
 import { Order } from './Order';
 
@@ -56,6 +57,14 @@ export class DeliveryManager {
       Math.floor(Math.random() * LANES.length),
     );
     this.current = order;
+    logEvent('order', 'spawned', {
+      id: order.id,
+      dish: dish.name,
+      base: dish.basePrice,
+      pickup: pickupDistance,
+      drop: order.dropoffDistance,
+      lane: order.lane,
+    });
     return order;
   }
 
@@ -81,6 +90,11 @@ export class DeliveryManager {
       inZone(bikeLane, trackDist, order.lane, order.pickupDistance)
     ) {
       order.setState('delivering');
+      logEvent('order', 'picked up', {
+        id: order.id,
+        dish: order.dish.name,
+        cap: order.dish.heatCapacity,
+      });
       return { event: 'picked', payout: 0 };
     }
 

@@ -13,6 +13,7 @@ export class Bike {
   readonly mesh: THREE.Mesh;
   laneIndex = 1;
   speed = 0;
+  private topSpeed = MAX_SPEED;
   private hopY = 0;
   private hopV = 0;
   private crashTimer = 0;
@@ -28,9 +29,13 @@ export class Bike {
     this.laneIndex = THREE.MathUtils.clamp(index, 0, LANES.length - 1);
   }
 
+  setTopSpeed(v: number): void {
+    this.topSpeed = Math.max(20, v);
+  }
+
   accelerate(dt: number): void {
     if (this.crashTimer > 0) return;
-    this.speed = Math.min(MAX_SPEED, this.speed + ACCELERATION * dt);
+    this.speed = Math.min(this.topSpeed, this.speed + ACCELERATION * dt);
   }
 
   brake(dt: number): void {

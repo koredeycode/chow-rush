@@ -42,11 +42,6 @@ body {
 
 #menu {
   position: absolute;
-  pointer-events: none;
-}
-
-#results {
-  position: absolute;
   inset: 0;
   display: none;
   align-items: center;
@@ -56,6 +51,42 @@ body {
 
 #results.visible {
   display: flex;
+}
+
+#menu.visible {
+  display: flex;
+}
+
+#menu .garage-card {
+  pointer-events: auto;
+  background: rgba(10, 10, 14, 0.92);
+  color: #fff;
+  padding: 24px 32px;
+  border-radius: 16px;
+  text-align: center;
+  max-width: min(92vw, 420px);
+}
+
+#menu .garage-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin: 8px 0;
+}
+
+#menu button {
+  pointer-events: auto;
+  min-height: 44px;
+  padding: 8px 16px;
+  font-size: 15px;
+  font-weight: 700;
+  border: none;
+  border-radius: 10px;
+}
+
+#menu button:disabled {
+  opacity: 0.45;
 }
 
 #results .results-card {

@@ -12,6 +12,7 @@ import {
 } from '../data/economy';
 import type { HeatState } from '../gameplay/HeatMeter';
 import { logEvent } from '../utils/log';
+import { saveBest } from './GameState';
 
 export const MIN_RATING = 1.0;
 export const MAX_RATING = 5.0;
@@ -25,6 +26,8 @@ export class Stats {
   streak = 0;
   crashes = 0;
   deliveries = 0;
+  wallet = 0;
+  totalXp = 0;
 
   reset(): void {
     this.cash = 0;
@@ -50,19 +53,22 @@ export class Stats {
 
   applyDelivery(payout: number, heat: HeatState): void {
     this.cash += payout;
+    this.wallet += payout;
     this.deliveries += 1;
+    let gain = XP_COLD;
     if (heat === 'hot') {
       this.streak += 1;
-      this.xp += XP_HOT;
+      gain = XP_HOT;
       this.rating = Math.min(MAX_RATING, this.rating + RATING_HOT);
     } else if (heat === 'warm') {
       this.streak = 0;
-      this.xp += XP_WARM;
+      gain = XP_WARM;
     } else {
       this.streak = 0;
-      this.xp += XP_COLD;
       this.rating = Math.max(MIN_RATING, this.rating + RATING_COLD);
     }
+    this.xp += gain;
+    this.totalXp += gain;
     this.timeLeft = Math.min(MAX_TIME, this.timeLeft + TIME_BONUS);
     logEvent('payout', `delivered +₦${payout}`, {
       heat,
@@ -71,6 +77,17 @@ export class Stats {
       rating: +this.rating.toFixed(1),
       streak: this.streak,
       timeLeft: Math.ceil(this.timeLeft),
+    });
+  }
+
+  finishShift(): void {
+    const best = saveBest(this.cash, this.xp);
+    logEvent('state', 'shift end → RESULTS', {
+      reason: this.timeLeft <= 0 ? 'timeout' : 'crashes',
+      cash: this.cash,
+      xp: this.xp,
+      rating: this.rating,
+      best,
     });
   }
 

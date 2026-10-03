@@ -1,4 +1,5 @@
 import type * as THREE from 'three';
+import { HORN_RADIUS } from '../data/obstacles';
 import { Blockers, type BlockHits } from './Blockers';
 import { Potholes } from './Potholes';
 
@@ -20,9 +21,10 @@ export class ObstacleManager {
     airborne: boolean,
     horn: boolean,
     density = 1,
+    hornRadius = HORN_RADIUS,
   ): BlockHits {
     this.potholes.update(dt, trackDist, bikeLane, airborne, density);
-    return this.blockers.update(trackDist, bikeLane, horn, density);
+    return this.blockers.update(trackDist, bikeLane, horn, density, hornRadius);
   }
 
   speedMultiplier(): number {

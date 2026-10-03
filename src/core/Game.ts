@@ -4,6 +4,7 @@ import { Keyboard, getCombinedInput } from '../systems/Input';
 import { Touch } from '../systems/TouchInput';
 import { deliverJingle, pickupDing, beep } from '../audio/beep';
 import { HUD } from '../ui/HUD';
+import { Garage } from '../ui/Garage';
 import { CityScroller } from '../world/CityScroller';
 import { DeliveryManager } from '../gameplay/DeliveryManager';
 import { HeatMeter, type HeatState } from '../gameplay/HeatMeter';
@@ -11,8 +12,10 @@ import { ObstacleManager } from '../gameplay/Obstacles';
 import { logEvent } from '../utils/log';
 import { CameraRig } from './Camera';
 import { Engine } from './Engine';
-import { GameState, State, saveBest } from './GameState';
+import { GameState, State } from './GameState';
 import { Stats } from './Stats';
+import { UpgradeShop } from './UpgradeShop';
+import type { UpgradeId } from '../data/upgrades';
 
 export class Game {
   private readonly engine = new Engine('game-canvas');
@@ -28,7 +31,9 @@ export class Game {
   private readonly touch = new Touch();
   private readonly state = new State();
   readonly stats = new Stats();
-  private lastOrderId: string | null = null;
+  private readonly shop: UpgradeShop;
+  private readonly garage: Garage;
+  private garageOpen = false;
   private lastHeat: HeatState | null = null;
   private prevAirborne = false;
 
@@ -39,19 +44,25 @@ export class Game {
     this.obstacles = new ObstacleManager(this.engine.scene);
     this.scroller.init(this.engine.scene);
     this.engine.scene.add(this.bike.mesh);
+    this.shop = new UpgradeShop(this.bike);
+    this.shop.loadInto(this.stats);
+    this.garage = new Garage(
+      () => ({ wallet: this.stats.wallet, levels: this.shop.levels() }),
+      (id: UpgradeId) => {
+        this.shop.buy(id, this.stats);
+        this.garage.refresh();
+      },
+      () => this.setGarageOpen(false),
+    );
   }
 
   start(): void {
     this.stats.reset();
-    this.lastOrderId = null;
     this.lastHeat = null;
+    this.garage.hide();
+    this.garageOpen = false;
     const first = this.delivery.spawnOrder(0);
-    logEvent('state', 'shift start → PLAYING', {
-      pickup: first.pickupDistance,
-      drop: first.dropoffDistance,
-      lane: first.lane,
-      dish: first.dish.id,
-    });
+    logEvent('state', 'shift start → PLAYING', { pickup: first.pickupDistance, drop: first.dropoffDistance, lane: first.lane, dish: first.dish.id });
     this.state.setState(GameState.PLAYING);
   }
 
@@ -73,7 +84,24 @@ export class Game {
     return this.state.current;
   }
 
+  toggleGarage(): void {
+    this.setGarageOpen(!this.garageOpen);
+  }
+
+  private setGarageOpen(open: boolean): void {
+    this.garageOpen = open;
+    if (open) {
+      this.pause();
+      this.garage.show();
+      logEvent('state', 'garage opened');
+    } else {
+      this.garage.hide();
+      this.resume();
+    }
+  }
+
   update(rawDt: number): void {
+    if (this.garageOpen) return;
     if (!this.state.isPlaying()) return;
     const dt = Math.min(0.05, rawDt);
 
@@ -92,6 +120,7 @@ export class Game {
       airborne,
       input.horn,
       this.scroller.getDensity(),
+      this.shop.hornRadius(),
     );
     if (hits.vendor) {
       this.bike.crash();
@@ -131,14 +160,9 @@ export class Game {
     if (result.event === 'picked') {
       const order = this.delivery.getCurrentOrder();
       if (order) {
-        this.heat.reset(order.dish.heatCapacity);
+        this.heat.reset(order.dish.heatCapacity, this.shop.thermalMult());
         this.lastHeat = 'hot';
         pickupDing();
-        logEvent('order', 'picked up', {
-          id: order.id,
-          dish: order.dish.name,
-          cap: order.dish.heatCapacity,
-        });
       }
     } else if (result.event === 'delivered') {
       this.stats.applyDelivery(result.payout, this.heat.getState());
@@ -146,29 +170,10 @@ export class Game {
       this.lastHeat = null;
     }
 
-    const active = this.delivery.getCurrentOrder();
-    if (active && active.id !== this.lastOrderId) {
-      this.lastOrderId = active.id;
-      logEvent('order', 'spawned', {
-        id: active.id,
-        dish: active.dish.name,
-        base: active.dish.basePrice,
-        pickup: active.pickupDistance,
-        drop: active.dropoffDistance,
-        lane: active.lane,
-      });
-    }
-
     this.stats.tick(dt);
     if (this.stats.isShiftOver()) {
-      const best = saveBest(this.stats.cash, this.stats.xp);
-      logEvent('state', 'shift end → RESULTS', {
-        reason: this.stats.timeLeft <= 0 ? 'timeout' : 'crashes',
-        cash: this.stats.cash,
-        xp: this.stats.xp,
-        rating: this.stats.rating,
-        best,
-      });
+      this.stats.finishShift();
+      this.shop.syncFrom(this.stats);
       this.state.setState(GameState.RESULTS);
     }
 

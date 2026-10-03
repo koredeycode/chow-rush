@@ -55,6 +55,7 @@ export class Blockers {
     bikeLane: number,
     horn: boolean,
     density = 1,
+    hornRadius = HORN_RADIUS,
   ): BlockHits {
     const hits: BlockHits = { vendor: false, ped: false };
 
@@ -88,7 +89,7 @@ export class Blockers {
     for (const b of this.blockers) {
       if (b.cleared || b.struck) continue;
       const ahead = b.dist - trackDist;
-      if (horn && b.lane === bikeLane && ahead > 0 && ahead < HORN_RADIUS) {
+      if (horn && b.lane === bikeLane && ahead > 0 && ahead < hornRadius) {
         b.cleared = true;
         logEvent('obstacle', `honked ${b.kind} aside`, {
           dist: Math.round(b.dist),
