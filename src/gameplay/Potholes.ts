@@ -40,6 +40,7 @@ export class Potholes {
     trackDist: number,
     bikeLane: number,
     airborne: boolean,
+    density = 1,
   ): void {
     this.slowTimer = Math.max(0, this.slowTimer - dt);
 
@@ -49,7 +50,7 @@ export class Potholes {
         lane: Math.floor(Math.random() * LANES.length),
         hit: false,
       });
-      this.nextSpawn += POTHOLE_SPACING;
+      this.nextSpawn += POTHOLE_SPACING / density;
     }
     while (this.holes.length > 0 && this.holes[0].dist < trackDist - 20) {
       this.holes.shift();

@@ -50,7 +50,12 @@ export class Blockers {
     );
   }
 
-  update(trackDist: number, bikeLane: number, horn: boolean): BlockHits {
+  update(
+    trackDist: number,
+    bikeLane: number,
+    horn: boolean,
+    density = 1,
+  ): BlockHits {
     const hits: BlockHits = { vendor: false, ped: false };
 
     while (this.nextVendor < trackDist + POTHOLE_AHEAD) {
@@ -61,7 +66,7 @@ export class Blockers {
         cleared: false,
         struck: false,
       });
-      this.nextVendor += VENDOR_SPACING;
+      this.nextVendor += VENDOR_SPACING / density;
     }
     while (this.nextPed < trackDist + POTHOLE_AHEAD) {
       this.blockers.push({
@@ -71,7 +76,7 @@ export class Blockers {
         cleared: false,
         struck: false,
       });
-      this.nextPed += PED_SPACING;
+      this.nextPed += PED_SPACING / density;
     }
     while (
       this.blockers.length > 0 &&

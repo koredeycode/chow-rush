@@ -19,9 +19,10 @@ export class ObstacleManager {
     bikeLane: number,
     airborne: boolean,
     horn: boolean,
+    density = 1,
   ): BlockHits {
-    this.potholes.update(dt, trackDist, bikeLane, airborne);
-    return this.blockers.update(trackDist, bikeLane, horn);
+    this.potholes.update(dt, trackDist, bikeLane, airborne, density);
+    return this.blockers.update(trackDist, bikeLane, horn, density);
   }
 
   speedMultiplier(): number {

@@ -1,5 +1,7 @@
 import { LANE_CHANGE_COOLDOWN } from '../data/bikeConfig';
+import { hornHonk } from '../audio/beep';
 import type { InputState } from '../types/input';
+import { logEvent } from '../utils/log';
 import type { Bike } from './Bike';
 
 export class BikeController {
@@ -10,6 +12,8 @@ export class BikeController {
   private prevLeft = false;
   private prevRight = false;
   private prevHop = false;
+  private prevHorn = false;
+  private prevAction = false;
 
   constructor(private readonly bike: Bike) {}
 
@@ -19,9 +23,13 @@ export class BikeController {
     const leftEdge = input.left && !this.prevLeft;
     const rightEdge = input.right && !this.prevRight;
     const hopEdge = input.hop && !this.prevHop;
+    const hornEdge = input.horn && !this.prevHorn;
+    const actionEdge = input.action && !this.prevAction;
     this.prevLeft = input.left;
     this.prevRight = input.right;
     this.prevHop = input.hop;
+    this.prevHorn = input.horn;
+    this.prevAction = input.action;
 
     if (this.cooldown <= 0) {
       if (leftEdge) {
@@ -36,6 +44,11 @@ export class BikeController {
     if (input.up) this.bike.accelerate(dt);
     if (input.down) this.bike.brake(dt);
     if (hopEdge) this.bike.hop();
+    if (hornEdge) {
+      hornHonk();
+      logEvent('input', 'horn');
+    }
+    if (actionEdge) logEvent('input', 'action (Go)');
 
     this.hop = input.hop;
     this.horn = input.horn;

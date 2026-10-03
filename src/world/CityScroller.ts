@@ -4,17 +4,24 @@ import {
   SEGMENT_COUNT,
   SEGMENT_LENGTH,
 } from '../data/cityConfig';
+import { ZONES, zoneIndexAt } from '../data/zones';
+import { logEvent } from '../utils/log';
 import { Building } from './Building';
 import { Road } from './Road';
 
 const RECYCLE_Z = 30;
+const FOG_LERP_RATE = 1.0;
 
 export class CityScroller {
   private readonly segments: THREE.Group[] = [];
   private readonly buildings: THREE.Mesh[][] = [];
   private trackDistance = 0;
+  private scene: THREE.Scene | null = null;
+  private zoneIndex = 0;
+  private readonly fogTarget = new THREE.Color(ZONES[0].fogColor);
 
   init(scene: THREE.Scene): void {
+    this.scene = scene;
     for (let i = 0; i < SEGMENT_COUNT; i++) {
       const group = new THREE.Group();
       group.position.z = -i * SEGMENT_LENGTH;
@@ -36,6 +43,24 @@ export class CityScroller {
 
   update(dt: number, speed: number): void {
     this.trackDistance += speed * dt;
+
+    const zoneIdx = zoneIndexAt(this.trackDistance);
+    if (zoneIdx !== this.zoneIndex) {
+      this.zoneIndex = zoneIdx;
+      const zone = ZONES[zoneIdx];
+      this.fogTarget.setHex(zone.fogColor);
+      logEvent('zone', `entered ${zone.name}`, {
+        traffic: zone.traffic,
+        density: zone.density,
+      });
+    }
+    if (this.scene?.fog instanceof THREE.Fog) {
+      this.scene.fog.color.lerp(this.fogTarget, 1 - Math.exp(-FOG_LERP_RATE * dt));
+    }
+    if (this.scene?.background instanceof THREE.Color) {
+      this.scene.background.lerp(this.fogTarget, 1 - Math.exp(-FOG_LERP_RATE * dt));
+    }
+
     for (let i = 0; i < this.segments.length; i++) {
       const group = this.segments[i];
       group.position.z += speed * dt;
@@ -50,5 +75,13 @@ export class CityScroller {
 
   getTrackDistance(): number {
     return this.trackDistance;
+  }
+
+  getDensity(): number {
+    return ZONES[this.zoneIndex].density;
+  }
+
+  getZoneName(): string {
+    return ZONES[this.zoneIndex].name;
   }
 }
