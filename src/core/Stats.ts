@@ -24,6 +24,7 @@ export class Stats {
   timeLeft = SHIFT_TIME;
   streak = 0;
   crashes = 0;
+  deliveries = 0;
 
   reset(): void {
     this.cash = 0;
@@ -32,6 +33,7 @@ export class Stats {
     this.timeLeft = SHIFT_TIME;
     this.streak = 0;
     this.crashes = 0;
+    this.deliveries = 0;
   }
 
   streakBonus(): number {
@@ -48,6 +50,7 @@ export class Stats {
 
   applyDelivery(payout: number, heat: HeatState): void {
     this.cash += payout;
+    this.deliveries += 1;
     if (heat === 'hot') {
       this.streak += 1;
       this.xp += XP_HOT;

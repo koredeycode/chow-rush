@@ -40,10 +40,42 @@ body {
   text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
 }
 
-#menu,
-#results {
+#menu {
   position: absolute;
   pointer-events: none;
+}
+
+#results {
+  position: absolute;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+#results.visible {
+  display: flex;
+}
+
+#results .results-card {
+  pointer-events: auto;
+  background: rgba(10, 10, 14, 0.92);
+  color: #fff;
+  padding: 24px 32px;
+  border-radius: 16px;
+  text-align: center;
+}
+
+#results .results-card button {
+  pointer-events: auto;
+  margin-top: 12px;
+  min-height: 48px;
+  padding: 10px 24px;
+  font-size: 16px;
+  font-weight: 700;
+  border: none;
+  border-radius: 12px;
 }
 
 #touch-controls {

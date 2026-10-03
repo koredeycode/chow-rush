@@ -1,6 +1,7 @@
 import { Game } from './core/Game';
 import { GameLoop } from './core/GameLoop';
 import { GameState } from './core/GameState';
+import { Results } from './ui/Results';
 import { getLogs } from './utils/log';
 import './style.css';
 
@@ -17,8 +18,17 @@ if (import.meta.env.DEV || new URLSearchParams(window.location.search).has('debu
 
 const game = new Game();
 const loop = new GameLoop();
+const results = new Results(() => game.start());
 
-loop.onUpdate = (dt: number): void => game.update(dt);
+loop.onUpdate = (dt: number): void => {
+  game.update(dt);
+  if (game.getState() === GameState.RESULTS) {
+    const s = game.stats;
+    results.show({ cash: s.cash, xp: s.xp, rating: s.rating, deliveries: s.deliveries });
+  } else {
+    results.hide();
+  }
+};
 loop.onRender = (): void => game.render();
 loop.start();
 

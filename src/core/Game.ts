@@ -27,7 +27,7 @@ export class Game {
   private readonly keyboard = new Keyboard();
   private readonly touch = new Touch();
   private readonly state = new State();
-  private readonly stats = new Stats();
+  readonly stats = new Stats();
   private lastOrderId: string | null = null;
   private lastHeat: HeatState | null = null;
   private prevAirborne = false;
@@ -96,11 +96,13 @@ export class Game {
     if (hits.vendor) {
       this.bike.crash();
       this.stats.registerBump();
+      this.rig.addShake(0.5);
       beep(90, 0.25, 'square');
     }
     if (hits.ped) {
       this.bike.crash();
       this.stats.registerCrash();
+      this.rig.addShake(0.7);
       beep(90, 0.25, 'square');
     }
     this.scroller.update(dt, this.bike.speed * this.obstacles.speedMultiplier());

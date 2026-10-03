@@ -66,3 +66,4 @@ Status legend: `[ ] Pending` `[~] In progress` `[x] Done, awaiting review` `[✓
 | 2026-10-03 | 2 | Vendor+ped slice (uncommitted): blockers, honk-clear 25m, vendor bump vs ped crash+rating, stun 1s |
 | 2026-10-03 | 2 | Zones slice (uncommitted): 5 zones, fog crossfade, traffic density scales spawns, input edges moved to controller |
 | 2026-10-03 | 2 | Landmarks slice (uncommitted): per-zone gateway props at boundaries, pooled visibility |
+| 2026-10-04 | 2 | Feel+UI batch: touch Brake, lane-swipe hop fix, crash shake, results screen+restart, 5 dishes/4 restaurants |

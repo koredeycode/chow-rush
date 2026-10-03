@@ -9,6 +9,7 @@ function ensureButtons(container: HTMLElement): void {
   const defs: Array<[string, string]> = [
     ['touch-hop', 'Hop'],
     ['touch-horn', 'Horn'],
+    ['touch-brake', 'Brake'],
     ['touch-action', 'Go'],
   ];
   for (const [id, label] of defs) {
@@ -28,6 +29,7 @@ export class Touch {
   private readonly btnById = new Map<number, 'hop' | 'horn' | 'action'>();
   private readonly startYById = new Map<number, number>();
   private readonly startXById = new Map<number, number>();
+  private readonly brakeIds = new Set<number>();
   private readonly container: HTMLElement | null;
   private hopTimer = 0;
   private laneTimer = 0;
@@ -50,6 +52,11 @@ export class Touch {
       for (const t of Array.from(e.changedTouches)) {
         const el = document.elementFromPoint(t.clientX, t.clientY) as HTMLElement | null;
         const btnId = el?.id ?? '';
+        if (btnId === 'touch-brake') {
+          this.brakeIds.add(t.identifier);
+          this.state.down = true;
+          continue;
+        }
         if (btnId === 'touch-hop' || btnId === 'touch-horn' || btnId === 'touch-action') {
           const kind = btnId === 'touch-hop' ? 'hop' : btnId === 'touch-horn' ? 'horn' : 'action';
           this.btnById.set(t.identifier, kind);
@@ -75,7 +82,7 @@ export class Touch {
       const target = e.target as HTMLElement | null;
       if (target?.closest?.('#__vconsole')) return;
       e.preventDefault();
-      let swiped = false;
+      let hopSwiped = false;
       for (const t of Array.from(e.changedTouches)) {
         const startY = this.startYById.get(t.identifier);
         const startX = this.startXById.get(t.identifier);
@@ -83,10 +90,9 @@ export class Touch {
         const dy = startY !== undefined ? startY - t.clientY : 0;
         if (Math.abs(dx) > SWIPE_LANE_PX && Math.abs(dx) > Math.abs(dy)) {
           this.pulseLane(dx > 0 ? 'right' : 'left');
-          swiped = true;
         } else if (dy > SWIPE_HOP_PX) {
           this.pulseHop();
-          swiped = true;
+          hopSwiped = true;
         }
         this.startYById.delete(t.identifier);
         this.startXById.delete(t.identifier);
@@ -100,14 +106,16 @@ export class Touch {
         if (btn === 'hop') this.state.hop = this.hasBtn('hop');
         if (btn === 'horn') this.state.horn = this.hasBtn('horn');
         if (btn === 'action') this.state.action = this.hasBtn('action');
+        if (this.brakeIds.delete(t.identifier)) {
+          this.state.down = this.brakeIds.size > 0;
+        }
       }
       const remaining = e.touches.length;
-      if (remaining === 0 && !swiped) {
+      if (remaining === 0 && !hopSwiped) {
         this.state.hop = this.hasBtn('hop');
         this.state.horn = this.hasBtn('horn');
         this.state.action = this.hasBtn('action');
       }
-      if (swiped) this.pulseHop();
     };
 
     this.onBlur = (): void => {
@@ -167,6 +175,7 @@ export class Touch {
     this.state.action = false;
     this.zoneById.clear();
     this.btnById.clear();
+    this.brakeIds.clear();
     this.startYById.clear();
     this.startXById.clear();
   }
