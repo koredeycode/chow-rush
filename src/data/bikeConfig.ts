@@ -4,3 +4,5 @@ export const MAX_SPEED = 60;
 export const ACCELERATION = 20;
 export const BRAKE_FORCE = 30;
 export const LANE_CHANGE_COOLDOWN = 0.15;
+export const HOP_VELOCITY = 8;
+export const GRAVITY = 22;

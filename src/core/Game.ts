@@ -1,30 +1,17 @@
-import {
-  MAX_TIME,
-  RATING_COLD,
-  RATING_CRASH,
-  RATING_HOT,
-  SHIFT_TIME,
-  STREAK_BONUS,
-  TIME_BONUS,
-  XP_COLD,
-  XP_HOT,
-  XP_WARM,
-} from '../data/economy';
 import { Bike } from '../player/Bike';
 import { BikeController } from '../player/BikeController';
 import { Keyboard, getCombinedInput } from '../systems/Input';
 import { Touch } from '../systems/TouchInput';
+import { deliverJingle, hornHonk, pickupDing } from '../audio/beep';
 import { HUD } from '../ui/HUD';
 import { CityScroller } from '../world/CityScroller';
 import { DeliveryManager } from '../gameplay/DeliveryManager';
-import { HeatMeter } from '../gameplay/HeatMeter';
+import { HeatMeter, type HeatState } from '../gameplay/HeatMeter';
+import { logEvent } from '../utils/log';
 import { CameraRig } from './Camera';
 import { Engine } from './Engine';
 import { GameState, State, saveBest } from './GameState';
-
-const MIN_RATING = 1.0;
-const MAX_RATING = 5.0;
-const MAX_CRASHES = 3;
+import { Stats } from './Stats';
 
 export class Game {
   private readonly engine = new Engine('game-canvas');
@@ -38,13 +25,12 @@ export class Game {
   private readonly keyboard = new Keyboard();
   private readonly touch = new Touch();
   private readonly state = new State();
-
-  private cash = 0;
-  private xp = 0;
-  private rating = MAX_RATING;
-  private timeLeft = SHIFT_TIME;
-  private streak = 0;
-  private crashes = 0;
+  private readonly stats = new Stats();
+  private lastOrderId: string | null = null;
+  private lastHeat: HeatState | null = null;
+  private prevAirborne = false;
+  private prevHorn = false;
+  private prevAction = false;
 
   constructor() {
     this.rig = new CameraRig(this.engine.camera);
@@ -55,23 +41,30 @@ export class Game {
   }
 
   start(): void {
-    this.cash = 0;
-    this.xp = 0;
-    this.rating = MAX_RATING;
-    this.timeLeft = SHIFT_TIME;
-    this.streak = 0;
-    this.crashes = 0;
-    this.delivery.spawnOrder(0);
+    this.stats.reset();
+    this.lastOrderId = null;
+    this.lastHeat = null;
+    const first = this.delivery.spawnOrder(0);
+    logEvent('state', 'shift start → PLAYING', {
+      pickup: first.pickupDistance,
+      drop: first.dropoffDistance,
+      lane: first.lane,
+      dish: first.dish.id,
+    });
     this.state.setState(GameState.PLAYING);
   }
 
   pause(): void {
-    if (this.state.isPlaying()) this.state.setState(GameState.PAUSED);
+    if (this.state.isPlaying()) {
+      this.state.setState(GameState.PAUSED);
+      logEvent('state', 'pause → PAUSED');
+    }
   }
 
   resume(): void {
     if (this.state.current === GameState.PAUSED) {
       this.state.setState(GameState.PLAYING);
+      logEvent('state', 'resume → PLAYING');
     }
   }
 
@@ -88,42 +81,89 @@ export class Game {
       this.touch.getInput(),
     );
     this.controller.update(dt, input);
+    const airborne = this.bike.isAirborne();
+    if (airborne && !this.prevAirborne) logEvent('input', 'hop → airborne');
+    this.prevAirborne = airborne;
+    if (input.horn && !this.prevHorn) {
+      hornHonk();
+      logEvent('input', 'horn');
+    }
+    this.prevHorn = input.horn;
+    if (input.action && !this.prevAction) logEvent('input', 'action (Go)');
+    this.prevAction = input.action;
     this.scroller.update(dt, this.bike.speed);
     const track = this.scroller.getTrackDistance();
 
     const carrying =
       this.delivery.getCurrentOrder()?.getState() === 'delivering';
-    if (carrying) this.heat.update(dt);
+    if (carrying) {
+      this.heat.update(dt);
+      const hs = this.heat.getState();
+      if (this.lastHeat !== null && hs !== this.lastHeat) {
+        logEvent('heat', `cooling → ${hs}`, {
+          pct: +this.heat.getPercent().toFixed(2),
+        });
+      }
+      this.lastHeat = hs;
+    }
 
-    const heatMult = this.heat.getTipMultiplier();
-    const streakBonus = this.streak * STREAK_BONUS;
     const result = this.delivery.update(
       this.bike.laneIndex,
       track,
-      heatMult,
-      streakBonus,
+      this.heat.getTipMultiplier(),
+      this.stats.streakBonus(),
     );
 
     if (result.event === 'picked') {
       const order = this.delivery.getCurrentOrder();
-      if (order) this.heat.reset(order.dish.heatCapacity);
+      if (order) {
+        this.heat.reset(order.dish.heatCapacity);
+        this.lastHeat = 'hot';
+        pickupDing();
+        logEvent('order', 'picked up', {
+          id: order.id,
+          dish: order.dish.name,
+          cap: order.dish.heatCapacity,
+        });
+      }
     } else if (result.event === 'delivered') {
-      this.applyDelivery(result.payout);
+      this.stats.applyDelivery(result.payout, this.heat.getState());
+      deliverJingle();
+      this.lastHeat = null;
     }
 
-    this.timeLeft -= dt;
-    if (this.timeLeft <= 0 || this.crashes >= MAX_CRASHES) {
-      this.timeLeft = Math.max(0, this.timeLeft);
-      saveBest(this.cash, this.xp);
+    const active = this.delivery.getCurrentOrder();
+    if (active && active.id !== this.lastOrderId) {
+      this.lastOrderId = active.id;
+      logEvent('order', 'spawned', {
+        id: active.id,
+        dish: active.dish.name,
+        base: active.dish.basePrice,
+        pickup: active.pickupDistance,
+        drop: active.dropoffDistance,
+        lane: active.lane,
+      });
+    }
+
+    this.stats.tick(dt);
+    if (this.stats.isShiftOver()) {
+      const best = saveBest(this.stats.cash, this.stats.xp);
+      logEvent('state', 'shift end → RESULTS', {
+        reason: this.stats.timeLeft <= 0 ? 'timeout' : 'crashes',
+        cash: this.stats.cash,
+        xp: this.stats.xp,
+        rating: this.stats.rating,
+        best,
+      });
       this.state.setState(GameState.RESULTS);
     }
 
     this.rig.update(dt, this.bike.getPosition());
     this.hud.update({
-      cash: this.cash,
+      cash: this.stats.cash,
       heatPercent: carrying ? this.heat.getPercent() : 0,
-      rating: this.rating,
-      timeLeft: this.timeLeft,
+      rating: this.stats.rating,
+      timeLeft: this.stats.timeLeft,
     });
   }
 
@@ -131,27 +171,7 @@ export class Game {
     this.engine.render();
   }
 
-  private applyDelivery(payout: number): void {
-    this.cash += payout;
-    const heatState = this.heat.getState();
-    if (heatState === 'hot') {
-      this.streak += 1;
-      this.xp += XP_HOT;
-      this.rating = Math.min(MAX_RATING, this.rating + RATING_HOT);
-    } else if (heatState === 'warm') {
-      this.streak = 0;
-      this.xp += XP_WARM;
-    } else {
-      this.streak = 0;
-      this.xp += XP_COLD;
-      this.rating = Math.max(MIN_RATING, this.rating + RATING_COLD);
-    }
-    this.timeLeft = Math.min(MAX_TIME, this.timeLeft + TIME_BONUS);
-  }
-
   registerCrash(): void {
-    this.crashes += 1;
-    this.streak = 0;
-    this.rating = Math.max(MIN_RATING, this.rating + RATING_CRASH);
+    this.stats.registerCrash();
   }
 }

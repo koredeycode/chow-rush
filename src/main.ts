@@ -1,11 +1,17 @@
 import { Game } from './core/Game';
 import { GameLoop } from './core/GameLoop';
 import { GameState } from './core/GameState';
+import { getLogs } from './utils/log';
 import './style.css';
 
 if (import.meta.env.DEV || new URLSearchParams(window.location.search).has('debug')) {
   void import('vconsole').then(({ default: VConsole }) => {
     new VConsole({ theme: 'dark' });
+    // Startup events fire before vConsole patches console — replay them.
+    for (const e of getLogs()) {
+      if (e.data === undefined) console.log(`[chow:${e.tag}] ${e.msg}`);
+      else console.log(`[chow:${e.tag}] ${e.msg}`, e.data);
+    }
   });
 }
 

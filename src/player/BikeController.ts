@@ -9,6 +9,7 @@ export class BikeController {
   private cooldown = 0;
   private prevLeft = false;
   private prevRight = false;
+  private prevHop = false;
 
   constructor(private readonly bike: Bike) {}
 
@@ -17,8 +18,10 @@ export class BikeController {
 
     const leftEdge = input.left && !this.prevLeft;
     const rightEdge = input.right && !this.prevRight;
+    const hopEdge = input.hop && !this.prevHop;
     this.prevLeft = input.left;
     this.prevRight = input.right;
+    this.prevHop = input.hop;
 
     if (this.cooldown <= 0) {
       if (leftEdge) {
@@ -32,6 +35,7 @@ export class BikeController {
 
     if (input.up) this.bike.accelerate(dt);
     if (input.down) this.bike.brake(dt);
+    if (hopEdge) this.bike.hop();
 
     this.hop = input.hop;
     this.horn = input.horn;

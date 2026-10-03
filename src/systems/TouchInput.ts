@@ -1,7 +1,9 @@
 import { EMPTY_INPUT, type InputState } from '../types/input';
 
 const SWIPE_HOP_PX = 30;
+const SWIPE_LANE_PX = 40;
 const HOP_PULSE_MS = 150;
+const LANE_PULSE_MS = 150;
 
 function ensureButtons(container: HTMLElement): void {
   const defs: Array<[string, string]> = [
@@ -25,8 +27,10 @@ export class Touch {
   private readonly zoneById = new Map<number, 'left' | 'right' | 'up'>();
   private readonly btnById = new Map<number, 'hop' | 'horn' | 'action'>();
   private readonly startYById = new Map<number, number>();
+  private readonly startXById = new Map<number, number>();
   private readonly container: HTMLElement | null;
   private hopTimer = 0;
+  private laneTimer = 0;
 
   private readonly onTouchStart: (e: TouchEvent) => void;
   private readonly onTouchEnd: (e: TouchEvent) => void;
@@ -53,6 +57,7 @@ export class Touch {
           continue;
         }
         this.startYById.set(t.identifier, t.clientY);
+        this.startXById.set(t.identifier, t.clientX);
         if (t.clientX < w / 3) {
           this.zoneById.set(t.identifier, 'left');
           this.state.left = true;
@@ -73,10 +78,18 @@ export class Touch {
       let swiped = false;
       for (const t of Array.from(e.changedTouches)) {
         const startY = this.startYById.get(t.identifier);
-        if (startY !== undefined && startY - t.clientY > SWIPE_HOP_PX) {
+        const startX = this.startXById.get(t.identifier);
+        const dx = startX !== undefined ? t.clientX - startX : 0;
+        const dy = startY !== undefined ? startY - t.clientY : 0;
+        if (Math.abs(dx) > SWIPE_LANE_PX && Math.abs(dx) > Math.abs(dy)) {
+          this.pulseLane(dx > 0 ? 'right' : 'left');
+          swiped = true;
+        } else if (dy > SWIPE_HOP_PX) {
+          this.pulseHop();
           swiped = true;
         }
         this.startYById.delete(t.identifier);
+        this.startXById.delete(t.identifier);
         const zone = this.zoneById.get(t.identifier);
         this.zoneById.delete(t.identifier);
         if (zone === 'left') this.state.left = this.hasZone('left');
@@ -117,6 +130,7 @@ export class Touch {
     window.removeEventListener('touchcancel', this.onTouchEnd);
     window.removeEventListener('blur', this.onBlur);
     window.clearTimeout(this.hopTimer);
+    window.clearTimeout(this.laneTimer);
     this.clear();
   }
 
@@ -135,6 +149,14 @@ export class Touch {
     }, HOP_PULSE_MS);
   }
 
+  private pulseLane(dir: 'left' | 'right'): void {
+    this.state[dir] = true;
+    window.clearTimeout(this.laneTimer);
+    this.laneTimer = window.setTimeout(() => {
+      this.state[dir] = this.hasZone(dir);
+    }, LANE_PULSE_MS);
+  }
+
   private clear(): void {
     this.state.left = false;
     this.state.right = false;
@@ -146,6 +168,7 @@ export class Touch {
     this.zoneById.clear();
     this.btnById.clear();
     this.startYById.clear();
+    this.startXById.clear();
   }
 
   private hasBtn(kind: 'hop' | 'horn' | 'action'): boolean {

@@ -1,10 +1,19 @@
 import * as THREE from 'three';
-import { ACCELERATION, BRAKE_FORCE, LANES, MAX_SPEED } from '../data/bikeConfig';
+import {
+  ACCELERATION,
+  BRAKE_FORCE,
+  GRAVITY,
+  HOP_VELOCITY,
+  LANES,
+  MAX_SPEED,
+} from '../data/bikeConfig';
 
 export class Bike {
   readonly mesh: THREE.Mesh;
   laneIndex = 1;
   speed = 0;
+  private hopY = 0;
+  private hopV = 0;
 
   constructor() {
     const geo = new THREE.BoxGeometry(1, 1, 2);
@@ -25,8 +34,22 @@ export class Bike {
     this.speed = Math.max(0, this.speed - BRAKE_FORCE * dt);
   }
 
-  update(_dt: number): void {
+  update(dt: number): void {
     this.mesh.position.x = LANES[this.laneIndex];
+    if (this.hopY > 0 || this.hopV !== 0) {
+      this.hopV -= GRAVITY * dt;
+      this.hopY = Math.max(0, this.hopY + this.hopV * dt);
+      if (this.hopY === 0) this.hopV = 0;
+      this.mesh.position.y = 0.5 + this.hopY;
+    }
+  }
+
+  hop(): void {
+    if (this.hopY <= 0) this.hopV = HOP_VELOCITY;
+  }
+
+  isAirborne(): boolean {
+    return this.hopY > 0;
   }
 
   getLaneX(): number {
