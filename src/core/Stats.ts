@@ -77,4 +77,12 @@ export class Stats {
     this.rating = Math.max(MIN_RATING, this.rating + RATING_CRASH);
     logEvent('crash', `crash #${this.crashes}`, { rating: this.rating });
   }
+
+  registerBump(): void {
+    this.crashes += 1;
+    this.streak = 0;
+    logEvent('crash', `bump #${this.crashes} (vendor, no rating loss)`, {
+      rating: this.rating,
+    });
+  }
 }

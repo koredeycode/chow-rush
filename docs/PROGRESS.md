@@ -63,3 +63,4 @@ Status legend: `[ ] Pending` `[~] In progress` `[x] Done, awaiting review` `[✓
 | 2026-10-01 | 1J | Integration done: thin main.ts, Game+loop wiring, P/Esc pause, full audit <200 lines |
 | 2026-10-02 | — | Mobile feel batch (uncommitted→committed): tracking logs+vConsole replay, Stats split, hop jump, swipe lanes, WebAudio beeps |
 | 2026-10-03 | 2 | Potholes slice (uncommitted): track-distance spawns, hop-to-dodge, 50% slow 2s, logs+thud |
+| 2026-10-03 | 2 | Vendor+ped slice (uncommitted): blockers, honk-clear 25m, vendor bump vs ped crash+rating, stun 1s |

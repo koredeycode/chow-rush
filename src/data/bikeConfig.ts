@@ -6,3 +6,4 @@ export const BRAKE_FORCE = 30;
 export const LANE_CHANGE_COOLDOWN = 0.15;
 export const HOP_VELOCITY = 8;
 export const GRAVITY = 22;
+export const CRASH_STUN_TIME = 1;

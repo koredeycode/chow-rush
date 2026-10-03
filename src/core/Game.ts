@@ -2,7 +2,7 @@ import { Bike } from '../player/Bike';
 import { BikeController } from '../player/BikeController';
 import { Keyboard, getCombinedInput } from '../systems/Input';
 import { Touch } from '../systems/TouchInput';
-import { deliverJingle, hornHonk, pickupDing } from '../audio/beep';
+import { deliverJingle, hornHonk, pickupDing, beep } from '../audio/beep';
 import { HUD } from '../ui/HUD';
 import { CityScroller } from '../world/CityScroller';
 import { DeliveryManager } from '../gameplay/DeliveryManager';
@@ -94,12 +94,23 @@ export class Game {
     this.prevHorn = input.horn;
     if (input.action && !this.prevAction) logEvent('input', 'action (Go)');
     this.prevAction = input.action;
-    this.obstacles.update(
+    const hits = this.obstacles.update(
       dt,
       this.scroller.getTrackDistance(),
       this.bike.laneIndex,
       airborne,
+      input.horn,
     );
+    if (hits.vendor) {
+      this.bike.crash();
+      this.stats.registerBump();
+      beep(90, 0.25, 'square');
+    }
+    if (hits.ped) {
+      this.bike.crash();
+      this.stats.registerCrash();
+      beep(90, 0.25, 'square');
+    }
     this.scroller.update(dt, this.bike.speed * this.obstacles.speedMultiplier());
     const track = this.scroller.getTrackDistance();
 

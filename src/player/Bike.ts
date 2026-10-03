@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import {
   ACCELERATION,
   BRAKE_FORCE,
+  CRASH_STUN_TIME,
   GRAVITY,
   HOP_VELOCITY,
   LANES,
@@ -14,6 +15,7 @@ export class Bike {
   speed = 0;
   private hopY = 0;
   private hopV = 0;
+  private crashTimer = 0;
 
   constructor() {
     const geo = new THREE.BoxGeometry(1, 1, 2);
@@ -27,6 +29,7 @@ export class Bike {
   }
 
   accelerate(dt: number): void {
+    if (this.crashTimer > 0) return;
     this.speed = Math.min(MAX_SPEED, this.speed + ACCELERATION * dt);
   }
 
@@ -36,6 +39,7 @@ export class Bike {
 
   update(dt: number): void {
     this.mesh.position.x = LANES[this.laneIndex];
+    this.crashTimer = Math.max(0, this.crashTimer - dt);
     if (this.hopY > 0 || this.hopV !== 0) {
       this.hopV -= GRAVITY * dt;
       this.hopY = Math.max(0, this.hopY + this.hopV * dt);
@@ -50,6 +54,11 @@ export class Bike {
 
   isAirborne(): boolean {
     return this.hopY > 0;
+  }
+
+  crash(): void {
+    this.speed = 0;
+    this.crashTimer = CRASH_STUN_TIME;
   }
 
   getLaneX(): number {
