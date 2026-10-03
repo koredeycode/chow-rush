@@ -134,7 +134,7 @@ export class Game {
       this.rig.addShake(0.7);
       beep(90, 0.25, 'square');
     }
-    this.scroller.update(dt, this.bike.speed * this.obstacles.speedMultiplier());
+    this.scroller.update(dt, this.bike.speed * this.obstacles.speedMultiplier(), this.bike.getPosition());
     const track = this.scroller.getTrackDistance();
 
     const carrying =

@@ -9,6 +9,7 @@ import { logEvent } from '../utils/log';
 import { Building } from './Building';
 import { Landmarks } from './Landmarks';
 import { Road } from './Road';
+import { Weather } from './Weather';
 
 const RECYCLE_Z = 30;
 const FOG_LERP_RATE = 1.0;
@@ -18,6 +19,7 @@ export class CityScroller {
   private readonly buildings: THREE.Mesh[][] = [];
   private trackDistance = 0;
   private landmarks: Landmarks | null = null;
+  private weather: Weather | null = null;
   private scene: THREE.Scene | null = null;
   private zoneIndex = 0;
   private readonly fogTarget = new THREE.Color(ZONES[0].fogColor);
@@ -25,6 +27,7 @@ export class CityScroller {
   init(scene: THREE.Scene): void {
     this.scene = scene;
     this.landmarks = new Landmarks(scene);
+    this.weather = new Weather(scene);
     for (let i = 0; i < SEGMENT_COUNT; i++) {
       const group = new THREE.Group();
       group.position.z = -i * SEGMENT_LENGTH;
@@ -44,9 +47,10 @@ export class CityScroller {
     }
   }
 
-  update(dt: number, speed: number): void {
+  update(dt: number, speed: number, bikePos: THREE.Vector3): void {
     this.trackDistance += speed * dt;
     this.landmarks?.update(this.trackDistance);
+    this.weather?.update(dt, bikePos, ZONES[this.zoneIndex].weather);
 
     const zoneIdx = zoneIndexAt(this.trackDistance);
     if (zoneIdx !== this.zoneIndex) {
