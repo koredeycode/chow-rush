@@ -7,6 +7,7 @@ import {
 import { ZONES, zoneIndexAt } from '../data/zones';
 import { logEvent } from '../utils/log';
 import { Building } from './Building';
+import { Landmarks } from './Landmarks';
 import { Road } from './Road';
 
 const RECYCLE_Z = 30;
@@ -16,12 +17,14 @@ export class CityScroller {
   private readonly segments: THREE.Group[] = [];
   private readonly buildings: THREE.Mesh[][] = [];
   private trackDistance = 0;
+  private landmarks: Landmarks | null = null;
   private scene: THREE.Scene | null = null;
   private zoneIndex = 0;
   private readonly fogTarget = new THREE.Color(ZONES[0].fogColor);
 
   init(scene: THREE.Scene): void {
     this.scene = scene;
+    this.landmarks = new Landmarks(scene);
     for (let i = 0; i < SEGMENT_COUNT; i++) {
       const group = new THREE.Group();
       group.position.z = -i * SEGMENT_LENGTH;
@@ -43,6 +46,7 @@ export class CityScroller {
 
   update(dt: number, speed: number): void {
     this.trackDistance += speed * dt;
+    this.landmarks?.update(this.trackDistance);
 
     const zoneIdx = zoneIndexAt(this.trackDistance);
     if (zoneIdx !== this.zoneIndex) {
