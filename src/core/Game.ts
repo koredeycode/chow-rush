@@ -7,6 +7,7 @@ import { HUD } from '../ui/HUD';
 import { CityScroller } from '../world/CityScroller';
 import { DeliveryManager } from '../gameplay/DeliveryManager';
 import { HeatMeter, type HeatState } from '../gameplay/HeatMeter';
+import { ObstacleManager } from '../gameplay/Obstacles';
 import { logEvent } from '../utils/log';
 import { CameraRig } from './Camera';
 import { Engine } from './Engine';
@@ -20,6 +21,7 @@ export class Game {
   private readonly controller: BikeController;
   private readonly scroller = new CityScroller();
   private readonly delivery: DeliveryManager;
+  private readonly obstacles: ObstacleManager;
   private readonly heat = new HeatMeter();
   private readonly hud = new HUD();
   private readonly keyboard = new Keyboard();
@@ -36,6 +38,7 @@ export class Game {
     this.rig = new CameraRig(this.engine.camera);
     this.controller = new BikeController(this.bike);
     this.delivery = new DeliveryManager(this.engine.scene);
+    this.obstacles = new ObstacleManager(this.engine.scene);
     this.scroller.init(this.engine.scene);
     this.engine.scene.add(this.bike.mesh);
   }
@@ -91,7 +94,13 @@ export class Game {
     this.prevHorn = input.horn;
     if (input.action && !this.prevAction) logEvent('input', 'action (Go)');
     this.prevAction = input.action;
-    this.scroller.update(dt, this.bike.speed);
+    this.obstacles.update(
+      dt,
+      this.scroller.getTrackDistance(),
+      this.bike.laneIndex,
+      airborne,
+    );
+    this.scroller.update(dt, this.bike.speed * this.obstacles.speedMultiplier());
     const track = this.scroller.getTrackDistance();
 
     const carrying =

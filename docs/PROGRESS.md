@@ -62,3 +62,4 @@ Status legend: `[ ] Pending` `[~] In progress` `[x] Done, awaiting review` `[✓
 | 2026-10-01 | 1I | State done: 4-state machine, Game wires all systems, timer/crash end, localStorage best |
 | 2026-10-01 | 1J | Integration done: thin main.ts, Game+loop wiring, P/Esc pause, full audit <200 lines |
 | 2026-10-02 | — | Mobile feel batch (uncommitted→committed): tracking logs+vConsole replay, Stats split, hop jump, swipe lanes, WebAudio beeps |
+| 2026-10-03 | 2 | Potholes slice (uncommitted): track-distance spawns, hop-to-dodge, 50% slow 2s, logs+thud |
