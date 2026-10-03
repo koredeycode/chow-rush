@@ -21,6 +21,7 @@ export function beep(
   dur = 0.12,
   type: OscillatorType = 'sine',
   delay = 0,
+  gainAmt = 0.2,
 ): void {
   const c = ac();
   if (!c) return;
@@ -30,11 +31,15 @@ export function beep(
   osc.type = type;
   osc.frequency.setValueAtTime(freq, t);
   gain.gain.setValueAtTime(0.0001, t);
-  gain.gain.exponentialRampToValueAtTime(0.2, t + 0.01);
+  gain.gain.exponentialRampToValueAtTime(gainAmt, t + 0.01);
   gain.gain.exponentialRampToValueAtTime(0.0001, t + dur);
   osc.connect(gain).connect(c.destination);
   osc.start(t);
   osc.stop(t + dur + 0.02);
+}
+
+export function unlockAudio(): void {
+  ac();
 }
 
 export function hornHonk(): void {

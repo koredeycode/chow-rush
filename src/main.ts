@@ -1,6 +1,7 @@
 import { Game } from './core/Game';
 import { GameLoop } from './core/GameLoop';
 import { GameState } from './core/GameState';
+import { Music } from './audio/Music';
 import { Results } from './ui/Results';
 import { getLogs } from './utils/log';
 import './style.css';
@@ -18,6 +19,8 @@ if (import.meta.env.DEV || new URLSearchParams(window.location.search).has('debu
 
 const game = new Game();
 const loop = new GameLoop();
+const music = new Music();
+music.start();
 const results = new Results(
   () => game.start(),
   () => game.toggleGarage(),
@@ -38,10 +41,8 @@ loop.start();
 game.start();
 
 window.addEventListener('keydown', (e: KeyboardEvent): void => {
-  if (e.code === 'KeyG') {
-    game.toggleGarage();
-    return;
-  }
+  if (e.code === 'KeyM') return music.toggle();
+  if (e.code === 'KeyG') return game.toggleGarage();
   if (e.code !== 'KeyP' && e.code !== 'Escape') return;
   if (game.getState() === GameState.PLAYING) game.pause();
   else game.resume();
