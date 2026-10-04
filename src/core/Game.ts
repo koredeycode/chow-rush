@@ -155,6 +155,7 @@ export class Game {
       track,
       this.heat.getTipMultiplier(),
       this.stats.streakBonus(),
+      this.controller.actionEdge,
     );
 
     if (result.event === 'picked') {
@@ -167,6 +168,8 @@ export class Game {
     } else if (result.event === 'delivered') {
       this.stats.applyDelivery(result.payout, this.heat.getState());
       deliverJingle();
+      this.lastHeat = null;
+    } else if (result.event === 'missed') {
       this.lastHeat = null;
     }
 

@@ -9,8 +9,9 @@ import { Order } from './Order';
 
 const PICKUP_AHEAD = 80;
 const DROPOFF_AFTER_PICKUP = 120;
+const ZONE_GRACE = 10;
 
-export type DeliveryEvent = 'picked' | 'delivered' | null;
+export type DeliveryEvent = 'picked' | 'delivered' | 'missed' | null;
 
 export interface DeliveryResult {
   event: DeliveryEvent;
@@ -20,6 +21,7 @@ export interface DeliveryResult {
 export class DeliveryManager {
   private current: Order | null = null;
   private spawnCount = 0;
+  private hintShown = false;
   private readonly pickupMarker: THREE.Mesh;
   private readonly dropoffMarker: THREE.Mesh;
 
@@ -73,9 +75,27 @@ export class DeliveryManager {
     trackDist: number,
     heatMult = 1,
     streakBonus = 0,
+    confirm = false,
   ): DeliveryResult {
     if (!this.current) this.spawnOrder(trackDist);
     const order = this.current as Order;
+
+    if (
+      order.getState() !== 'delivering' &&
+      trackDist > order.pickupDistance + ZONE_GRACE
+    ) {
+      this.current = null;
+      logEvent('order', 'missed pickup — new order dispatched', { id: order.id });
+      return { event: 'missed', payout: 0 };
+    }
+    if (
+      order.getState() === 'delivering' &&
+      trackDist > order.dropoffDistance + ZONE_GRACE
+    ) {
+      this.current = null;
+      logEvent('order', 'missed dropoff — customer cancelled', { id: order.id });
+      return { event: 'missed', payout: 0 };
+    }
 
     const pickupAhead = order.pickupDistance - trackDist;
     this.pickupMarker.visible = order.getState() !== 'delivering';
@@ -85,10 +105,20 @@ export class DeliveryManager {
     this.dropoffMarker.visible = order.getState() === 'delivering';
     this.dropoffMarker.position.set(LANES[order.lane], 1, -dropAhead);
 
-    if (
-      order.getState() !== 'delivering' &&
-      inZone(bikeLane, trackDist, order.lane, order.pickupDistance)
-    ) {
+    const inPickup = inZone(bikeLane, trackDist, order.lane, order.pickupDistance);
+    const inDrop = inZone(bikeLane, trackDist, order.lane, order.dropoffDistance);
+
+    if (order.getState() !== 'delivering' && inPickup && !this.hintShown) {
+      this.hintShown = true;
+      logEvent('order', 'at pickup — press Go (E)', { id: order.id });
+    }
+    if (order.getState() === 'delivering' && inDrop && !this.hintShown) {
+      this.hintShown = true;
+      logEvent('order', 'at dropoff — press Go (E)', { id: order.id });
+    }
+    if (!inPickup && !inDrop) this.hintShown = false;
+
+    if (order.getState() !== 'delivering' && inPickup && confirm) {
       order.setState('delivering');
       logEvent('order', 'picked up', {
         id: order.id,
@@ -98,10 +128,7 @@ export class DeliveryManager {
       return { event: 'picked', payout: 0 };
     }
 
-    if (
-      order.getState() === 'delivering' &&
-      inZone(bikeLane, trackDist, order.lane, order.dropoffDistance)
-    ) {
+    if (order.getState() === 'delivering' && inDrop && confirm) {
       order.setState('delivered');
       const tip = Math.round(Math.random() * TIP_BASE * heatMult);
       const payout = order.dish.basePrice + tip + streakBonus;

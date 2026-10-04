@@ -8,6 +8,7 @@ export class BikeController {
   hop = false;
   horn = false;
   action = false;
+  actionEdge = false;
   private cooldown = 0;
   private prevLeft = false;
   private prevRight = false;
@@ -53,6 +54,7 @@ export class BikeController {
     this.hop = input.hop;
     this.horn = input.horn;
     this.action = input.action;
+    this.actionEdge = actionEdge;
 
     this.bike.update(dt);
   }
